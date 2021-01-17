@@ -1,7 +1,9 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -23,6 +25,14 @@ type ConnectorMetadata struct {
 	MaxRetries    int
 	ContentType   string
 	SourceName    string
+}
+
+type ErrorResponse struct {
+	Status       int    `json:"status"`
+	Message      string `json:"message"`
+	HttpEndpoint string `json:"http_endpoint"`
+	Source       string `json:"source"`
+	Body         string `json:"body"`
 }
 
 // ParseConnectorMetadata parses connector side common fields and returns as ConnectorMetadata or returns error
@@ -88,11 +98,31 @@ func HandleHTTPRequest(message string, headers http.Header, data ConnectorMetada
 	}
 
 	if resp == nil {
-		return nil, fmt.Errorf("every function invocation retry failed; final retry gave empty response. http_endpoint: %v, source: %v", data.HTTPEndpoint, data.SourceName)
+		errorResponce := ErrorResponse{
+			Status:       503,
+			Message:      "every function invocation retry failed; final retry gave empty response.",
+			HttpEndpoint: data.HTTPEndpoint,
+			Source:       data.SourceName,
+		}
+		jsonString, _ := json.Marshal(errorResponce)
+		logger.Info(string(jsonString))
+		return nil, fmt.Errorf(string(jsonString))
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 300 {
-		return nil, fmt.Errorf("request returned failure: %v. http_endpoint: %v, source: %v", resp.StatusCode, data.HTTPEndpoint, data.SourceName)
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+
+		errorBody := ErrorResponse{
+			Status:       resp.StatusCode,
+			Message:      "request returned failure",
+			HttpEndpoint: data.HTTPEndpoint,
+			Source:       data.SourceName,
+			Body:         string(body),
+		}
+		jsonString, _ := json.Marshal(errorBody)
+		logger.Info(string(jsonString))
+		return nil, fmt.Errorf(string(jsonString))
 	}
 	return resp, nil
 }
