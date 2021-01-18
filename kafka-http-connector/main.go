@@ -222,10 +222,10 @@ func (conn *kafkaConnector) ConsumeClaim(session sarama.ConsumerGroupSession, cl
 			"KEDA-Source-Name":    {conn.connectorData.SourceName},
 		}
 
-		// Set the headers came from Kafka record
-		for _, h := range message.Headers {
-			headers.Add(string(h.Key), string(h.Value))
-		}
+		// // Set the headers came from Kafka record
+		// for _, h := range message.Headers {
+		// 	headers.Add(string(h.Key), string(h.Value))
+		// }
 
 		resp, err := common.HandleHTTPRequest(msg, headers, conn.connectorData, conn.logger)
 		if err != nil {
