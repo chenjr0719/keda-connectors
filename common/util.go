@@ -33,6 +33,7 @@ type ErrorResponse struct {
 	HttpEndpoint string `json:"http_endpoint"`
 	Source       string `json:"source"`
 	Body         string `json:"body"`
+	Request      string `json:"request"`
 }
 
 // ParseConnectorMetadata parses connector side common fields and returns as ConnectorMetadata or returns error
@@ -103,6 +104,7 @@ func HandleHTTPRequest(message string, headers http.Header, data ConnectorMetada
 			Message:      "every function invocation retry failed; final retry gave empty response.",
 			HttpEndpoint: data.HTTPEndpoint,
 			Source:       data.SourceName,
+			Request:      message,
 		}
 		jsonString, _ := json.Marshal(errorResponce)
 		logger.Info(string(jsonString))
@@ -119,6 +121,7 @@ func HandleHTTPRequest(message string, headers http.Header, data ConnectorMetada
 			HttpEndpoint: data.HTTPEndpoint,
 			Source:       data.SourceName,
 			Body:         string(body),
+			Request:      message,
 		}
 		jsonString, _ := json.Marshal(errorBody)
 		logger.Info(string(jsonString))
