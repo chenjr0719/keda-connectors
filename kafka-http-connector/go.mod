@@ -14,4 +14,4 @@ require (
 	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
 )
 
-replace github.com/fission/keda-connectors/common => github.com/chenjr0719/keda-connectors/common v0.0.0-20210118065923-a991d1d170c8
+replace github.com/fission/keda-connectors/common => github.com/chenjr0719/keda-connectors/common v0.0.0-20210503110248-bfffa17b390a
